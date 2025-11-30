@@ -1,73 +1,56 @@
 <?php
-session_start();
+// Step 1: Connect to database
+$servername = "localhost";
+$username   = "root";
+$password   = "";
+$dbname     = "stylenwear";
 
-if (!isset($_SESSION['user_id'])) {
-    die("Please log in to view your order history.");
-}
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-$user_id = $_SESSION['user_id'];
-
-$host = "127.0.0.1";
-$port = 3307;
-$dbname = "stylenwear_db";
-$username = "root";
-$password = "";
-
-$conn = new mysqli($hostname, $username, $password, $dbname);
+// Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT product_name, quantity, total_price, order_date FROM orders WHERE user_id = ? ORDER BY order_date DESC";
-$stmt = $conn->prepare($sql);
-if (!$stmt) {
-    die("Prepare failed: " . $conn->error);
+// Step 2: Assume logged-in user ID (for demo purposes)
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    die("User not logged in.");
 }
-$stmt->bind_param("i", $user_id);
-if (!$stmt->execute()) {
-    die("Execute failed: " . $stmt->error);
-}
-$result = $stmt->get_result();
+$user_id = intval($_SESSION['user_id']); 
 
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Order History</title>
-    <style>
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-    </style>
-</head>
-<body>
-    <h2>Your Order History</h2>
-    <?php if ($result->num_rows > 0): ?>
-        <table>
+// Step 3: Query orders for this user
+$sql = "SELECT order_id, items AS product_name, quantity, total_price, order_date 
+        FROM order_history 
+        WHERE user_id = $user_id 
+        ORDER BY order_date";
+
+$result = $conn->query($sql);
+
+// Step 4: Display results
+echo "<h2>Order History</h2>";
+if ($result && $result->num_rows > 0) {
+    echo "<table border='1' cellpadding='5'>
             <tr>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Total Price</th>
-                <th>Order Date</th>
-            </tr>
-            <?php while ($row = $result->fetch_assoc()): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($row['product_name']); ?></td>
-                    <td><?php echo $row['quantity']; ?></td>
-                    <td>$<?php echo $row['total_price']; ?></td>
-                    <td><?php echo $row['order_date']; ?></td>
-                </tr>
-            <?php endwhile; ?>
-        </table>
-    <?php else: ?>
-        <p>No orders found.</p>
-    <?php endif; ?>
-    <br>
-    <a href="index.php">Back to Home</a>
-</body>
-</html>
-<?php
-$stmt->close();
+              <th>Order ID</th>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Total Price</th>
+              <th>Date</th>
+            </tr>";
+    while ($row = $result->fetch_assoc()) {
+        echo "<tr>
+                <td>{$row['order_id']}</td>
+                <td>{$row['product_name']}</td>
+                <td>{$row['quantity']}</td>
+                <td>{$row['total_price']}</td>
+                <td>{$row['order_date']}</td>
+              </tr>";
+    }
+    echo "</table>";
+} else {
+    echo "No orders found.";
+}
+
 $conn->close();
 ?>
