@@ -3,7 +3,7 @@ session_start();
 
 // If already logged in, redirect to home (optional)
 if (isset($_SESSION['user_id'])) {
-    header('Location: client/index.php');
+    header('Location: client/Index6.php');
     exit();
 }
 
@@ -15,7 +15,7 @@ try {
     // REAL database settings from your working shop code
     $host = "127.0.0.1";
     $port = 3307;
-    $dbname = "stylenwear_db";
+    $dbname = "stylenwear";
     $username = "root";
     $password = "";
 
@@ -63,23 +63,6 @@ try {
 } catch(PDOException $e) {
     $dbAvailable = false;
 }
-/*
- *  ITEMS ORDERED (from real orders) */
-$stmt = $pdo->query("
-    SELECT 
-        o.order_id,
-        u.username AS customer,
-        sa.recipient_name,
-        sa.city,
-        o.payment_method,
-        o.total_amount,
-        o.created_at AS order_date
-    FROM orders o
-    JOIN users u ON o.user_id = u.user_id
-    LEFT JOIN shipping_addresses sa ON o.shipping_address_id = sa.address_id
-    ORDER BY o.created_at DESC
-");
-$itemsOrdered = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Helper escape function
 function e($s){ return htmlspecialchars($s, ENT_QUOTES,'UTF-8'); }
@@ -139,6 +122,11 @@ function e($s){ return htmlspecialchars($s, ENT_QUOTES,'UTF-8'); }
         <li class="nav-item">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#ordered">
                 Items Ordered (<?= count($itemsOrdered) ?>)
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#ordered">
+                Sales Performance (<?= count($itemsOrdered) ?>)
             </button>
         </li>
         </li>
