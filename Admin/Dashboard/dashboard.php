@@ -1,13 +1,11 @@
 <?php
 session_start();
 
-// If already logged in, redirect to home
 if (isset($_SESSION['user_id'])) {
-    header('Location: client/index.php');
+    header('Location: dashboard.php');
     exit();
 }
 
-// Database connection
 $host = 'localhost';
 $dbname = 'funtasticfive';
 $username = 'root';
@@ -22,7 +20,6 @@ try {
     $pdo = null;
 }
 
-// Helper to fetch a single integer metric from DB safely
 function fetchCountOrFallback(PDO $pdo = null, string $sql = '', int $fallback = 0): int {
     if ($pdo === null || empty($sql)) return $fallback;
     try {
@@ -44,7 +41,6 @@ if ($funtasticfive) {
     $reports = 12;
 }
 
-// Load user rows on db (limit 10)
 $usersRows = [];
 if ($funtasticfive) {
     try {
@@ -61,13 +57,12 @@ if ($funtasticfive) {
     ];
 }
 
-// ========== NEW CODE FOR REAL MONTHLY DATA ==========
-// Get monthly active users from database - REAL DATA
+
 $monthlyData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // Start with zeros for all months
 
 if ($funtasticfive) {
     try {
-        // This query counts users for each month based on registration date
+
         $sql = "SELECT 
                     MONTH(date_joined) as month_number, 
                     COUNT(*) as user_count 
@@ -77,22 +72,20 @@ if ($funtasticfive) {
         
         $stmt = $pdo->query($sql);
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Fill the monthly data array with real numbers
+       
         foreach ($results as $row) {
-            $monthIndex = $row['month_number'] - 1; // January=0, February=1, etc.
+            $monthIndex = $row['month_number'] - 1; // January=0, February=1
             $monthlyData[$monthIndex] = (int)$row['user_count'];
         }
         
     } catch (Throwable $e) {
-        // If there's an error, keep the zeros
+        
         error_log("Chart data error: " . $e->getMessage());
     }
 }
 
-// Convert PHP array to JavaScript format
+
 $jsMonthlyData = json_encode($monthlyData);
-// ========== END NEW CODE ==========
 
 function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES|ENT_SUBSTITUTE, 'UTF-8'); }
 
@@ -108,6 +101,7 @@ function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES|ENT_SUBSTITUTE, '
 
   <style>
     body { min-height: 100vh; }
+    font-family: sans-serif;
     .sidebar { width: 220px; }
     .content { margin-left: 220px; padding: 20px; }
     @media (max-width: 767px) {
@@ -128,9 +122,6 @@ function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES|ENT_SUBSTITUTE, '
       <div class="collapse navbar-collapse" id="topbar">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <a class="nav-link" href="profile.php"><i class="fa fa-user"></i> Profile</a>
-          </li>
-          <li class="nav-item">
             <a class="nav-link" href="logout.php"><i class="fa fa-sign-out-alt"></i> Logout</a>
           </li>
         </ul>
@@ -147,7 +138,6 @@ function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES|ENT_SUBSTITUTE, '
           <li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="fa fa-dashboard me-2"></i>Dashboard</a></li>
           <li class="nav-item"><a class="nav-link" href="users.php"><i class="fa fa-users me-2"></i>Users</a></li>
           <li class="nav-item"><a class="nav-link" href="reports.php"><i class="fa fa-file-alt me-2"></i>Reports</a></li>
-          <li class="nav-item"><a class="nav-link" href="settings.php"><i class="fa fa-cog me-2"></i>Settings</a></li>
         </ul>
       </div>
     </aside>
@@ -252,7 +242,6 @@ function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES|ENT_SUBSTITUTE, '
                 <h6 class="card-title">Quick Actions</h6>
                 <a href="users.php" class="btn btn-sm btn-outline-primary w-100 mb-2"><i class="fa fa-users me-2"></i>Manage Users</a>
                 <a href="reports.php" class="btn btn-sm btn-outline-secondary w-100 mb-2"><i class="fa fa-file-alt me-2"></i>View Orders</a>
-                <a href="settings.php" class="btn btn-sm btn-outline-dark w-100"><i class="fa fa-cog me-2"></i>Settings</a>
               </div>
             </div>
 
@@ -288,12 +277,12 @@ function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES|ENT_SUBSTITUTE, '
     const ctx = document.getElementById('usersChart').getContext('2d');
     const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     
-    // ========== REAL DATA FROM DATABASE ==========
+
     const data = {
       labels,
       datasets: [{
         label: 'User Registrations',
-        data: <?php echo $jsMonthlyData; ?>, // REAL DATA FROM DATABASE!
+        data: <?php echo $jsMonthlyData; ?>, 
         fill: true,
         tension: 0.3,
         borderColor: '#0d6efd',
@@ -320,7 +309,7 @@ function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES|ENT_SUBSTITUTE, '
           tooltip: {
             callbacks: {
               label: function(context) {
-                return Users: ${context.parsed.y};
+                return `Users: ${context.parsed.y}`;
               }
             }
           }
