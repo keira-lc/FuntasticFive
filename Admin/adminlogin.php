@@ -1,13 +1,17 @@
 <?php
 session_start();
 
-// If already logged in, go directly to dashboard
+
+if (isset($_SESSION['user_id'])) {
+    header('Location: client/index.php');
+    exit();
+}
+
 if (isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === true) {
     header("Location: dashboard.php");
     exit;
 }
 
-// Optional DB connection
 $dbAvailable = false;
 if (file_exists(__DIR__ . "/config.php")) {
     require_once __DIR__ . "/config.php";
@@ -16,13 +20,11 @@ if (file_exists(__DIR__ . "/config.php")) {
 
 $error = "";
 
-// Handle login submission
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $username = trim($_POST["username"]);
     $password = trim($_POST["password"]);
 
     if ($dbAvailable) {
-        // Get admin from database
         $stmt = $pdo->prepare("SELECT id, username, password, role FROM users WHERE username = ? LIMIT 1");
         $stmt->execute([$username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -36,9 +38,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $error = "Invalid admin credentials.";
         }
     } else {
-        // Fallback admin login (NO DATABASE)
+        
         $defaultUser = "admin";
-        $defaultPass = "admin123"; // CHANGE THIS!
+        $defaultPass = "admin123"; 
 
         if ($username === $defaultUser && $password === $defaultPass) {
             $_SESSION['is_admin'] = true;
@@ -51,50 +53,97 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 ?>
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Admin Login</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-body {
-    background: #f5f6f7;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.login-card {
-    width: 360px;
-}
-</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Style'n Wear</title>
+<link rel="stylesheet" href="style5.css">
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 </head>
 <body>
 
-<div class="card login-card shadow">
-    <div class="card-body">
-        <h3 class="text-center mb-3">Admin Login</h3>
+<header>
+    <a href="#" class="logo">Style'n Wear</a>
 
-        <?php if (!empty($error)): ?>
-            <div class="alert alert-danger py-2"><?= htmlspecialchars($error) ?></div>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">About</a>
+        <a href="#">Collection</a>
+        <a href="#">Contact</a>
+    </nav>
+
+    <div class="user-auth">
+        <?php if (!empty($name)):?>
+        <div class="profile-box">
+            <div class="avatar-circle"><?= strtoupper($name[0]); ?></div>
+            <div class="dropdown">
+                <a href="#">My Account</a>
+                <a href="logout.php" class="logout-link">Logout</a>
+            </div>
+        </div>
+        <?php else: ?>
+        <button type="button" class="login-btn-modal">Login</button>
         <?php endif; ?>
+    </div>
+</header>
 
-        <form method="POST" autocomplete="off">
-            <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input name="username" type="text" class="form-control" required autofocus>
+<section>
+    <h1>Hey <?= $name ?? 'Developer' ?>!</h1>
+</section>
+
+<?php if (!empty($alerts)):?>
+<div class="alert-box show">
+    <?php foreach ($alerts as $alert): ?>
+    <div class="alert <?= $alert['type'];?>">
+       <i class='bx <?= $alert["type"] === "success" ? "bxs-check-circle" : "bxs-x-circle"; ?>'></i>
+        <span><?= $alert['message']; ?></span>
+    </div>
+    <?php endforeach; ?>
+</div>
+<?php endif; ?>
+
+<div class="auth-modal <?= $active_form === 'register' ? 'show slide' : ($active_form === 'login' ? 'show' : '') ?>">
+    <button type="button" class="close-btn-modal"><i class='bx bx-x'></i></button>
+
+    <div class="form-box login">
+        <h2>Login</h2>
+        <form action="auth_process.php" method="POST">
+            <div class="input-box">
+                <input type="email" name="email" placeholder="Email" required>
+                <i class='bx bxs-envelope'></i>
             </div>
-
-            <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input name="password" type="password" class="form-control" required>
+            <div class="input-box">
+                <input type="password" name="password" placeholder="Password" required>
+                <i class='bx bxs-lock'></i>
             </div>
+            <button type="submit" name="login_btn" class="btn">Login</button>
+            <p>Don't have an account? <a href="#" class="register-link">Register</a></p>
+        </form>
+    </div>
 
-            <button class="btn btn-primary w-100">Login</button>
+    <div class="form-box register">
+        <h2>Register</h2>
+        <form action="auth_process.php" method="POST">
+            <div class="input-box">
+                <input type="text" name="name" placeholder="Name" required>
+                <i class='bx bxs-user'></i>
+            </div>
+            <div class="input-box">
+                <input type="email" name="email" placeholder="Email" required>
+                <i class='bx bxs-envelope'></i>
+            </div>
+            <div class="input-box">
+                <input type="password" name="password" placeholder="Password" required>
+                <i class='bx bxs-lock'></i>
+            </div>
+            <button type="submit" name="register_btn" class="btn">Register</button>
+            <p>Already have an account? <a href="#" class="login-link">Login</a></p>
         </form>
     </div>
 </div>
 
+<script src="script5.js"></script>
 </body>
 </html>
