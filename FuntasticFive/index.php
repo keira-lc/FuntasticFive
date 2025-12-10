@@ -1,231 +1,381 @@
-<?php
-require_once __DIR__ . '/sql_utils.php';
-
-$products = db_query_all('SELECT item_id, item_name, item_price, stock, image_url FROM items ORDER BY item_id ASC');
-$USER_ID = 1;
-$addresses = db_query_all('SELECT * FROM shipping_addresses WHERE user_id = ?', [$USER_ID]);
-?>
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Style 'n Wear</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-<link rel="stylesheet" href="cartstyle.css?v=<?=time()?>">
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style'n Wear - Luxury Fashion & Jewelry</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="client/style.css">
 </head>
 <body>
-
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2>Shop Products</h2>
-      <button id="toggleCartBtn" class="btn btn-pink">
-          <i class="bi bi-cart"></i> View Cart
-          <span id="cartBadge" class="badge bg-danger rounded-pill">0</span>
-      </button>
-  </div>
-
-  <div class="products-grid mb-5">
-    <?php foreach ($products as $product): ?>
-      <div class="card-product">
-        <img src="<?=htmlspecialchars($product['image_url'])?>" alt="<?=htmlspecialchars($product['item_name'])?>">
-        <div class="p-3 d-flex flex-column">
-          <h5 title="<?=htmlspecialchars($product['item_name'])?>"><?=htmlspecialchars($product['item_name'])?></h5>
-          <p>Stock: <?=intval($product['stock'])?></p>
-          <p>₱<?=number_format($product['item_price'],2)?></p>
-          <div class="d-flex gap-2 mt-auto">
-            <input type="number" class="form-control qty-input" value="1" min="1" max="<?=intval($product['stock'])?>">
-            <button class="btn-pink add-btn" data-id="<?=$product['item_id']?>">
-              <i class="bi bi-cart-plus"></i> Add
-            </button>
-          </div>
+    <!-- Luxury Navigation -->
+    <nav class="luxury-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <!-- Brand -->
+                <a href="#" class="brand-title gold-text">
+                    Style<span style="color: var(--gold)">'n</span>Wear
+                </a>
+                
+                <!-- Navigation -->
+                <div class="d-none d-lg-flex align-items-center">
+                    <a href="#" class="nav-link active">Home</a>
+                    <a href="#about" class="nav-link">About</a>
+                    <a href="#featured" class="nav-link">Collections</a>
+                    <a href="#contact" class="nav-link">Contact</a>
+                    <a href="login.php" class="nav-link logout-btn">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login to Shop
+                    </a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button class="btn d-lg-none gold-text" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+                    <i class="fas fa-bars fa-2x"></i>
+                </button>
+            </div>
         </div>
-      </div>
-    <?php endforeach; ?>
-  </div>
+    </nav>
 
-  <!-- CART + SHIPPING + PAYMENT + ORDER HISTORY -->
-  <div id="cartSection" style="display:none;">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="hero-title gold-text">Discover Timeless Elegance</h1>
+                    <p class="hero-subtitle">
+                        Clothes & Jewelry for Every Occasion. Experience luxury fashion with our exclusive collections.
+                    </p>
+                    <a href="login.php">
+                        <button class="add-to-cart" style="max-width: 250px;">
+                            <i class="fas fa-lock me-2"></i>LOGIN TO SHOP
+                        </button>
+                    </a>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-image">
+                        <img src="image/display.avif" alt="Elegant silk dress with gold jewelry accessories" 
+                             class="img-fluid rounded shadow-lg" style="border: 3px solid var(--gold);">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products Section -->
+    <section id="featured" class="products-section">
+        <div class="container">
+            <h2 class="section-title gold-text">Featured Collections</h2>
+            <p class="text-center mb-5" style="color: var(--gold-light); font-size: 1.2rem;">
+                Preview our exclusive items. Login to view full collection and shop.
+            </p>
+            
+            <div class="row g-4">
+                <!-- Product 1 -->
+                <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                    <div class="product-card h-100 d-flex flex-column">
+                        <div class="product-image-container" style="height: 250px; overflow: hidden; position: relative;">
+                            <img src="image/Tube Top with Drawstrings.jpg" 
+                                 alt="Tube Top with sides Drawstrings"
+                                 class="product-image"
+                                 style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+                        </div>
+                        <div class="product-content d-flex flex-column flex-grow-1 p-3">
+                            <h4 class="product-title">Tube Top with Drawstrings</h4>
+                            <span class="product-category">Women's Tops</span>
+                            <div class="price-container mt-auto pt-3">
+                                <span class="current-price gold-text">₱275.00</span>
+                                <div class="discount mt-2">ON SALE</div>
+                            </div>
+                            <a href="login.php">
+                                <button class="add-to-cart mt-3 w-100">
+                                    <i class="fas fa-lock me-2"></i>LOGIN TO PURCHASE
+                                </button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product 2 -->
+                <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                    <div class="product-card h-100 d-flex flex-column">
+                        <div class="product-image-container" style="height: 250px; overflow: hidden; position: relative;">
+                            <img src="image/Hat Gatsby.jpg" 
+                                 alt="Hat Flat Gatsby Vintage"
+                                 class="product-image"
+                                 style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+                        </div>
+                        <div class="product-content d-flex flex-column flex-grow-1 p-3">
+                            <h4 class="product-title">Hat Flat Gatsby Vintage</h4>
+                            <span class="product-category">Accessories</span>
+                            <div class="price-container mt-auto pt-3">
+                                <span class="current-price gold-text">₱260.00</span>
+                            </div>
+                            <a href="login.php">
+                                <button class="add-to-cart mt-3 w-100">
+                                    <i class="fas fa-lock me-2"></i>LOGIN TO PURCHASE
+                                </button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product 3 -->
+                <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                    <div class="product-card h-100 d-flex flex-column">
+                        <div class="product-image-container" style="height: 250px; overflow: hidden; position: relative;">
+                            <img src="image/Derby Shoes.jpg" 
+                                 alt="Patent Leather Lace-Up derby Shoes"
+                                 class="product-image"
+                                 style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+                        </div>
+                        <div class="product-content d-flex flex-column flex-grow-1 p-3">
+                            <h4 class="product-title">Leather Derby Shoes</h4>
+                            <span class="product-category">Footwear</span>
+                            <div class="price-container mt-auto pt-3">
+                                <span class="current-price gold-text">₱500.00</span>
+                            </div>
+                            <a href="login.php">
+                                <button class="add-to-cart mt-3 w-100">
+                                    <i class="fas fa-lock me-2"></i>LOGIN TO PURCHASE
+                                </button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product 4 -->
+                <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                    <div class="product-card h-100 d-flex flex-column">
+                        <div class="product-image-container" style="height: 250px; overflow: hidden; position: relative;">
+                            <img src="image/Diamond Earrings.jpg" 
+                                 alt="Diamond Earrings"
+                                 class="product-image"
+                                 style="width: 100%; height: 100%; object-fit: cover; object-position: center;">
+                        </div>
+                        <div class="product-content d-flex flex-column flex-grow-1 p-3">
+                            <h4 class="product-title">Diamond Earrings</h4>
+                            <span class="product-category">Jewelry</span>
+                            <div class="price-container mt-auto pt-3">
+                                <span class="current-price gold-text">₱2,959.00</span>
+                            </div>
+                            <a href="login.php">
+                                <button class="add-to-cart mt-3 w-100">
+                                    <i class="fas fa-lock me-2"></i>LOGIN TO PURCHASE
+                                </button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-5">
+                <a href="login.php" class="text-decoration-none">
+                    <button class="add-to-cart" style="padding: 15px 40px; font-size: 1.2rem;">
+                        <i class="fas fa-arrow-right me-2"></i>VIEW FULL CATALOG
+                    </button>
+                </a>
+            </div>
+        </div>
+    </section>
+
+     <!-- About Section -->
+    <section id="about" class="py-5" style="background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="gold-text mb-4" style="font-family: 'Cinzel', serif; font-size: 2.5rem;">About Style'n Wear</h2>
+                    <p style="color: var(--off-white); line-height: 1.8;">
+                        Welcome to Style'n Wear, where luxury meets everyday fashion. 
+                        We curate exclusive collections of apparel and accessories that 
+                        redefine elegance and sophistication. From statement jewelry 
+                        to premium clothing, each piece is selected to help you express 
+                        your unique style.
+                    </p>
+                    <p style="color: var(--off-white); line-height: 1.8;">
+                        Our mission is to provide fashion-forward individuals with 
+                        high-quality, stylish pieces that make a statement. 
+                        Join our community of fashion enthusiasts and discover 
+                        your signature look.
+                    </p>
+                </div>
+                <div class="col-lg-6">
+                    <div class="text-center">
+                        <img src="image/stylenwear.png" 
+                             alt="Luxury fashion display"
+                             class="img-fluid rounded shadow-lg"
+                             style="border: 2px solid var(--gold); max-height: 400px; object-fit: contain;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-5">
+        <div class="container">
+            <h2 class="section-title gold-text">Contact Us</h2>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="mb-4">
+                        <h5 class="gold-text mb-3">Get in Touch</h5>
+                        <p style="color: var(--off-white);">
+                            Have questions about our collections or need assistance? 
+                            Our customer service team is here to help you.
+                        </p>
+                        <div class="mt-4">
+                            <p style="color: var(--gold-light);">
+                                <i class="fas fa-envelope me-2"></i> info@stylenwear.com
+                            </p>
+                            <p style="color: var(--gold-light);">
+                                <i class="fas fa-phone me-2"></i> +63 123 456 7890
+                            </p>
+                            <p style="color: var(--gold-light);">
+                                <i class="fas fa-map-marker-alt me-2"></i> Manila, Philippines
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <h5 class="gold-text mb-3">Ready to Shop?</h5>
+                    <p style="color: var(--off-white); margin-bottom: 30px;">
+                        Create an account or login to access our full catalog and 
+                        start shopping our exclusive collections.
+                    </p>
+                    <div class="d-flex gap-3">
+                        <a href="login.php" class="text-decoration-none flex-grow-1">
+                            <button class="add-to-cart w-100">
+                                <i class="fas fa-sign-in-alt me-2"></i>LOGIN
+                            </button>
+                        </a>
+                        <a href="register.php" class="text-decoration-none flex-grow-1">
+                            <button class="add-to-cart w-100" style="background: linear-gradient(45deg, #2dce89, #2dcecc);">
+                                <i class="fas fa-user-plus me-2"></i>REGISTER
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Access -->
+    <div class="text-center py-4" style="background: rgba(212, 175, 55, 0.1); border-top: 1px solid var(--gold);">
+        <div class="container">
+            <h6 class="gold-text mb-2">Admin Access</h6>
+            <p style="color: var(--gold-light); font-size: 0.9rem;">
+                Are you an administrator? Access the admin panel here.
+            </p>
+            <a href="Admin/index.php" class="text-decoration-none">
+                <button class="add-to-cart" style="padding: 8px 25px; font-size: 0.9rem;">
+                    <i class="fas fa-cog me-2"></i>ADMIN LOGIN
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <!-- Luxury Footer -->
+    <footer class="luxury-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h3 class="footer-brand gold-text">Style'n Wear</h3>
+                    <p style="color: #aaa;">
+                        Redefining luxury fashion with our exclusive collections. 
+                        Experience elegance, sophistication, and unparalleled style.
+                    </p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-pinterest"></i></a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <div class="footer-links">
+                        <h6>Quick Links</h6>
+                        <a href="#">Home</a>
+                        <a href="#about">About</a>
+                        <a href="#featured">Collections</a>
+                        <a href="#contact">Contact</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 col-md-8 mb-4">
+                    <div class="footer-links">
+                        <h6>Join Our Community</h6>
+                        <p style="color: #aaa; font-size: 0.9rem;">
+                            Subscribe for exclusive offers, early access to new collections, 
+                            and style inspiration delivered to your inbox.
+                        </p>
+                        <div class="input-group" style="max-width: 400px;">
+                            <input type="email" class="form-control bg-dark text-white" 
+                                   placeholder="Your email address" 
+                                   style="border-color: var(--gold);">
+                            <button class="btn gold-text" type="button" 
+                                    style="background: var(--gold); color: var(--charcoal);">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-5 pt-3 border-top" style="border-color: rgba(212, 175, 55, 0.3);">
+                <p style="color: #777; font-size: 0.9rem;">
+                    © 2025 Style'n Wear. All rights reserved. | Luxury Fashion Redefined
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- CART TABLE -->
-    <div class="section-box mb-4">
-      <h3>Your Cart</h3>
-      <div class="table-responsive">
-        <table class="table table-striped" id="cartTable">
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Price</th>
-              <th>Qty</th>
-              <th>Subtotal</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- SHIPPING + PAYMENT -->
-    <div class="section-box row mb-4">
-      <!-- SHIPPING -->
-      <div class="col-md-6 mb-3">
-        <h4>Shipping Address</h4>
-        <select id="shipping_select" class="form-select mb-2">
-          <option value="">-- Choose saved address --</option>
-          <?php foreach ($addresses as $a): ?>
-            <option value="<?=intval($a['address_id'])?>">
-              <?=htmlspecialchars($a['recipient_name'].' - '.$a['address_line'].', '.$a['city'].', '.$a['province'])?>
-            </option>
-          <?php endforeach; ?>
-        </select>
-        <button class="btn btn-pink btn-sm mb-3" id="showNewShip">Add New Address</button>
-
-        <div id="newShip" style="display:none;">
-          <input class="form-control mb-1" id="recipient_name" placeholder="Recipient name">
-          <input class="form-control mb-1" id="address_line" placeholder="Address">
-          <input class="form-control mb-1" id="city" placeholder="City">
-          <input class="form-control mb-1" id="province" placeholder="Province">
-          <input class="form-control mb-1" id="postal_code" placeholder="Postal code">
-          <input class="form-control mb-1" id="phone" placeholder="Phone">
-          <button class="btn btn-pink btn-sm" id="saveAddr">Save Address</button>
-        </div>
-      </div>
-
-      <!-- PAYMENT -->
-      <div class="col-md-6 mb-3">
-        <h4>Payment</h4>
-        <select id="payment_method" class="form-select mb-2">
-          <option value="COD">Cash on Delivery</option>
-          <option value="GCASH">GCash</option>
-          <option value="BANK">Bank Transfer</option>
-        </select>
-        <input class="form-control mb-2" id="txn_ref" placeholder="Transaction reference (if any)">
-        <button class="btn btn-pink w-100" id="placeOrder">Place Order</button>
-      </div>
-    </div>
-
-    <!-- ORDER HISTORY -->
-    <div class="section-box">
-      <h4>Your Orders</h4>
-      <div id="orders"></div>
-    </div>
-
-  </div>
-
-</div>
-
-<script>
-const USER_ID = <?=json_encode($USER_ID)?>;
-
-// ------------------ CART ------------------
-$('#toggleCartBtn').on('click', function(){
-    $('#cartSection').slideToggle();
-    $('.products-grid').slideToggle();
-});
-
-// Load cart items
-function loadCart(){
-    $.get('api/view_cart.php', {user_id: USER_ID}, function(res){
-        let items = typeof res==='string'?JSON.parse(res):res;
-        let tbody = $('#cartTable tbody'); tbody.html('');
-        if(!items.length){
-            tbody.append('<tr><td colspan="5" class="text-center">Cart is empty</td></tr>');
-            $('#cartBadge').text(0); return;
-        }
-        let totalQty=0; let total=0;
-        items.forEach(it=>{
-            totalQty+=parseInt(it.quantity);
-            total+=parseFloat(it.subtotal);
-            tbody.append(`<tr>
-<td>${it.item_name}</td>
-<td>₱${parseFloat(it.item_price).toFixed(2)}</td>
-<td><input type="number" class="form-control qty" value="${it.quantity}" min="1" data-cart-id="${it.cart_item_id}" style="width:70px;"></td>
-<td>₱${parseFloat(it.subtotal).toFixed(2)}</td>
-<td><button class="btn btn-danger btn-sm remove" data-cart-id="${it.cart_item_id}"><i class="bi bi-trash"></i></button></td>
-</tr>`);
-        });
-        tbody.append(`<tr><td colspan="3"><strong>Total</strong></td><td colspan="2">₱${total.toFixed(2)}</td></tr>`);
-        $('#cartBadge').text(totalQty);
-    });
-}
-
-// Add to cart
-$(document).on('click', '.add-btn', function(){
-    const id = $(this).data('id');
-    const qty = $(this).siblings('input.qty-input').val() || 1;
-    $.post('api/add_to_cart.php', {user_id: USER_ID, item_id: id, qty: qty}, function(res){
-        res = typeof res==='string'?JSON.parse(res):res;
-        if(res.status==='success'){ alert('Added to cart!'); loadCart(); }
-        else alert('Error adding to cart');
-    });
-});
-
-// Update quantity
-$(document).on('change', '.qty', function(){
-    const cartId = $(this).data('cart-id');
-    const qty = $(this).val();
-    $.post('api/update_cart.php', {cart_item_id: cartId, qty: qty}, loadCart);
-});
-
-// Remove item
-$(document).on('click', '.remove', function(){
-    const cartId = $(this).data('cart-id');
-    $.post('api/remove_from_cart.php', {cart_item_id: cartId}, loadCart);
-});
-
-// ------------------ SHIPPING ------------------
-$('#showNewShip').on('click', () => $('#newShip').toggle());
-$('#saveAddr').on('click', function(){
-    const data = {
-        user_id: USER_ID,
-        recipient_name: $('#recipient_name').val(),
-        address_line: $('#address_line').val(),
-        city: $('#city').val(),
-        province: $('#province').val(),
-        postal_code: $('#postal_code').val(),
-        phone: $('#phone').val()
-    };
-    $.post('api/shipping.php', data, function(res){
-        res = typeof res==='string'?JSON.parse(res):res;
-        if(res.status==='success'){
-            alert('Address saved!');
-            $('#shipping_select').append(`<option value="${res.address_id}">${data.recipient_name} - ${data.address_line}, ${data.city}</option>`).val(res.address_id);
-            $('#newShip').hide();
-        } else alert(res.message || 'Failed to save address');
-    });
-});
-
-// ------------------ PLACE ORDER + PAYMENT ------------------
-$('#placeOrder').on('click', function(){
-    const shipping_id = $('#shipping_select').val();
-    const method = $('#payment_method').val();
-    const txn_ref = $('#txn_ref').val();
-    if(!shipping_id) return alert('Please select or add a shipping address');
-    $.post('api/checkout.php', {user_id: USER_ID, shipping_address_id: shipping_id}, function(res){
-        res = typeof res==='string'?JSON.parse(res):res;
-        if(res.status==='success'){
-            $.post('api/payments_api.php', {
-                order_id: res.order_id,
-                amount: res.total,
-                method: method,
-                transaction_ref: txn_ref
-            }, function(pay){
-                pay = typeof pay==='string'?JSON.parse(pay):pay;
-                if(pay.status==='success'){
-                    alert('Order placed successfully!');
-                    loadCart();
-                    loadOrders();
-                } else alert('Payment failed: '+pay.message);
+    <script>
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if(targetId === '#') return;
+                
+                const target = document.querySelector(targetId);
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
             });
-        } else alert('Order failed: '+res.message);
-    });
-});
+        });
 
-$(document).ready(function(){ loadCart(); loadOrders(); });
-</script>
-
+        // Mobile menu functionality
+        const mobileMenu = `
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="mobileMenu" style="background: var(--charcoal); color: white;">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title gold-text">Style'n Wear</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="d-flex flex-column gap-3">
+                    <a href="#" class="nav-link">Home</a>
+                    <a href="#about" class="nav-link">About</a>
+                    <a href="#featured" class="nav-link">Collections</a>
+                    <a href="#contact" class="nav-link">Contact</a>
+                    <a href="login.php" class="nav-link logout-btn text-center">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login to Shop
+                    </a>
+                    <a href="Admin/index.php" class="nav-link text-center" style="color: var(--gold);">
+                        <i class="fas fa-cog me-2"></i>Admin Login
+                    </a>
+                </div>
+            </div>
+        </div>`;
+        
+        // Add mobile menu to body
+        document.body.insertAdjacentHTML('beforeend', mobileMenu);
+    </script>
 </body>
 </html>
